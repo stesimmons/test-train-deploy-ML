@@ -1,17 +1,21 @@
 from fastapi import FastAPI
 import torch
-
+import os
 from app.model import Net
 
 app = FastAPI()
 
+
 model = Net()
 
-model.load_state_dict(
-    torch.load("models/fashion_mnist.pth", map_location="cpu")
-)
+MODEL_PATH = "models/fashion_mnist.pth"
 
-model.eval()
+if os.path.exists(MODEL_PATH):
+    model.load_state_dict(
+        torch.load(MODEL_PATH, map_location="cpu")
+    )
+    model.eval()
+
 
 CLASSES = [
     "T-shirt/top",
