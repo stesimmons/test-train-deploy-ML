@@ -2,6 +2,10 @@ from fastapi import FastAPI
 import torch
 import os
 from app.model import Net
+from fastapi import UploadFile, File
+from PIL import Image
+import torchvision.transforms as transforms
+import torch.nn.functional as F
 
 app = FastAPI()
 
@@ -41,20 +45,32 @@ def health():
         "model_loaded": True
     }
 
-@app.get("/predict")
-def predict():
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
 
-    import torch
+    image = Image.open(file.file).convert("L")
 
-    sample = torch.randn(1, 1, 28, 28)
+    transform = transforms.Compose([
+        transforms.Resize((28, 28)),
+        transforms.ToTensor()
+    ])
+
+    image_tensor = transform(image).unsqueeze(0)
 
     with torch.no_grad():
-        output = model(sample)
-        prediction = output.argmax(dim=1).item()
+        output = model(image_tensor)
+
+        probabilities = F.softmax(output, dim=1)
+
+        confidence, prediction = torch.max(
+            probabilities,
+            dim=1
+        )
 
     return {
-        "class_id": prediction,
-        "class_name": CLASSES[prediction]
+        "class_id": prediction.item(),
+        "class_name": CLASSES[prediction.item()],
+        "confidence": round(confidence.item() * 100, 2)
     }
 
 @app.get("/model-info")

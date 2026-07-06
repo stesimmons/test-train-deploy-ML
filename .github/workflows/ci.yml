@@ -44,3 +44,9 @@ jobs:
         with:
           name: fashion-mnist-model
           path: models/fashion_mnist.pth
+
+      - name: Trigger Render Deployment
+        run: |
+          curl "$RENDER_DEPLOY_HOOK"
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
