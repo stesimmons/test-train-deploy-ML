@@ -10,6 +10,15 @@ from app.model import Net
 os.makedirs("models", exist_ok=True)
 os.makedirs("data", exist_ok=True)
 
+import os
+import sys
+
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..")
+    )
+)
+
 # Fashion-MNIST preprocessing
 transform = transforms.ToTensor()
 
