@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  test:
+  test-train:
 
     runs-on: ubuntu-latest
 
@@ -26,3 +26,7 @@ jobs:
       - name: Run Tests
         run: |
           pytest
+
+      - name: Train Model
+        run: |
+          python src/train.py
