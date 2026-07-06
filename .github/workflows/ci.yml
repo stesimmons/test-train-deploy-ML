@@ -43,4 +43,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fashion-mnist-model
-          path: models/
+          path: models/fashion_mnist.pth
