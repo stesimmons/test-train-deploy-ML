@@ -1,84 +1,60 @@
 import os
 
 from fastapi import FastAPI
+from fastapi import File
+from fastapi import UploadFile
 
-print("STEP 1")
+from PIL import Image
 
 import torch
-
-print("STEP 2")
+import torch.nn.functional as F
+import torchvision.transforms as transforms
 
 from app.model import Net
+from app.classes import CLASSES
 
-print("STEP 3")
 
 app = FastAPI()
 
 MODEL_PATH = "models/food101.pth"
 
-print("STEP 4")
-
 model = Net()
 
-print("STEP 5")
-
-loaded = False
-error_message = None
-
-try:
-
-    state_dict = torch.load(
+model.load_state_dict(
+    torch.load(
         MODEL_PATH,
         map_location="cpu"
     )
+)
 
-    print("STEP 6")
-
-    model.load_state_dict(
-        state_dict
-    )
-
-    print("STEP 7")
-
-    model.eval()
-
-    loaded = True
-
-except Exception as e:
-
-    error_message = str(e)
-
-    print(f"LOAD ERROR: {e}")
+model.eval()
 
 
 @app.get("/")
 def home():
-
     return {
-        "message": "FOOD101_LOAD_TEST"
+        "message": "FOOD101_LIVE"
     }
 
 
 @app.get("/health")
 def health():
-
     return {
         "status": "healthy"
     }
 
 
-@app.get("/model-info")
-def model_info():
-
+@app.get("/food-test")
+def food_test():
     return {
-        "model_loaded": loaded,
-        "error": error_message
+        "status": "food101 active"
     }
 
 
-@app.get("/food-test")
-def food_test():
-
+@app.get("/model-info")
+def model_info():
     return {
-        "status": "active"
+        "model_name": "Food-101 CNN",
+        "num_classes": len(CLASSES),
+        "model_loaded": True
     }
