@@ -2,21 +2,31 @@ import os
 
 from fastapi import FastAPI
 
-print("STEP 1")
-
 app = FastAPI()
-
-print("STEP 2")
 
 MODEL_PATH = "models/food101.pth"
 
-print("STEP 3")
 
 @app.get("/")
 def home():
     return {
-        "message": "FOOD101_MODEL_TEST"
+        "message": "FOOD101_TEST_DEPLOYMENT"
     }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy"
+    }
+
+
+@app.get("/food-test")
+def food_test():
+    return {
+        "status": "food101 deployment active"
+    }
+
 
 @app.get("/model-info")
 def model_info():
@@ -32,12 +42,7 @@ def model_info():
         )
 
     return {
+        "deployment": "food101-test",
         "model_exists": exists,
         "model_size_mb": size_mb
-    }
-
-@app.get("/food-test")
-def food_test():
-    return {
-        "status": "active"
     }
