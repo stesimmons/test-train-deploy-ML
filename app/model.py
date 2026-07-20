@@ -22,11 +22,20 @@ class Net(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(128 * 16 * 16, 512),
+
+            nn.Linear(
+                128 * 16 * 16,
+                512
+            ),
+
             nn.ReLU(),
+
             nn.Dropout(0.5),
 
-            nn.Linear(512, 101)
+            nn.Linear(
+                512,
+                101
+            )
         )
 
     def forward(self, x):
