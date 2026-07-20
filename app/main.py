@@ -16,33 +16,54 @@ app = FastAPI()
 
 MODEL_PATH = "models/food101.pth"
 
-model_exists = os.path.exists(MODEL_PATH)
-
-print(f"MODEL EXISTS: {model_exists}")
+print("STEP 4")
 
 model = Net()
 
-print("STEP 4: MODEL CREATED")
+print("STEP 5")
+
+loaded = False
+error_message = None
+
+try:
+
+    state_dict = torch.load(
+        MODEL_PATH,
+        map_location="cpu"
+    )
+
+    print("STEP 6")
+
+    model.load_state_dict(
+        state_dict
+    )
+
+    print("STEP 7")
+
+    model.eval()
+
+    loaded = True
+
+except Exception as e:
+
+    error_message = str(e)
+
+    print(f"LOAD ERROR: {e}")
 
 
 @app.get("/")
 def home():
+
     return {
-        "message": "FOOD101_MODEL_TEST"
+        "message": "FOOD101_LOAD_TEST"
     }
 
 
 @app.get("/health")
 def health():
+
     return {
         "status": "healthy"
-    }
-
-
-@app.get("/food-test")
-def food_test():
-    return {
-        "status": "active"
     }
 
 
@@ -50,6 +71,14 @@ def food_test():
 def model_info():
 
     return {
-        "deployment": "food101-model-test",
-        "model_exists": model_exists
+        "model_loaded": loaded,
+        "error": error_message
+    }
+
+
+@app.get("/food-test")
+def food_test():
+
+    return {
+        "status": "active"
     }
