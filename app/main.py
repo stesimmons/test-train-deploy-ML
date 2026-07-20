@@ -46,6 +46,21 @@ def home():
     }
 
 
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy"
+    }
+
+
+@app.get("/model-info")
+def model_info():
+    return {
+        "model_name": "Food-101 CNN",
+        "num_classes": len(CLASSES),
+        "model_loaded": os.path.exists(MODEL_PATH)
+    }
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
 
