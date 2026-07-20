@@ -1,40 +1,43 @@
+import os
+
 from fastapi import FastAPI
 
-print("STARTUP STEP 1")
+print("STEP 1")
 
 app = FastAPI()
 
-print("STARTUP STEP 2")
+print("STEP 2")
 
+MODEL_PATH = "models/food101.pth"
+
+print("STEP 3")
 
 @app.get("/")
 def home():
-
     return {
-        "message": "FOOD101_TEST_DEPLOYMENT"
+        "message": "FOOD101_MODEL_TEST"
     }
-
-
-@app.get("/food-test")
-def food_test():
-
-    return {
-        "status": "food101 deployment active"
-    }
-
 
 @app.get("/model-info")
 def model_info():
 
+    exists = os.path.exists(MODEL_PATH)
+
+    size_mb = 0
+
+    if exists:
+        size_mb = round(
+            os.path.getsize(MODEL_PATH) / 1024 / 1024,
+            2
+        )
+
     return {
-        "deployment": "food101-test",
-        "version": "1.0"
+        "model_exists": exists,
+        "model_size_mb": size_mb
     }
 
-
-@app.get("/health")
-def health():
-
+@app.get("/food-test")
+def food_test():
     return {
-        "status": "healthy"
+        "status": "active"
     }
