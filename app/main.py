@@ -8,23 +8,13 @@ from PIL import Image
 
 import torch
 import torch.nn.functional as F
-
 import torchvision.transforms as transforms
 
-from torchvision.datasets import Food101
-
 from app.model import Net
+from app.classes import CLASSES
 
 
 app = FastAPI()
-
-
-CLASSES = Food101(
-    root="./data",
-    split="train",
-    download=True
-).classes
-
 
 MODEL_PATH = "models/food101.pth"
 
@@ -42,7 +32,9 @@ if os.path.exists(MODEL_PATH):
     model.eval()
 
     print("Food-101 model loaded")
+
 else:
+
     print("food101.pth not found")
 
 
@@ -50,8 +42,7 @@ else:
 def home():
 
     return {
-        "message":
-        "Food-101 Classifier API"
+        "message": "Food-101 Classifier API"
     }
 
 
@@ -69,9 +60,7 @@ def model_info():
     return {
         "model_name": "Food-101 CNN",
         "num_classes": len(CLASSES),
-        "model_loaded": os.path.exists(
-            MODEL_PATH
-        )
+        "model_loaded": os.path.exists(MODEL_PATH)
     }
 
 
@@ -105,25 +94,16 @@ async def predict(
             dim=1
         )
 
-        confidence, prediction = (
-            torch.max(
-                probabilities,
-                dim=1
-            )
+        confidence, prediction = torch.max(
+            probabilities,
+            dim=1
         )
 
     return {
-        "class_id":
-            prediction.item(),
-
-        "class_name":
-            CLASSES[
-                prediction.item()
-            ],
-
-        "confidence":
-            round(
-                confidence.item() * 100,
-                2
-            )
+        "class_id": prediction.item(),
+        "class_name": CLASSES[prediction.item()],
+        "confidence": round(
+            confidence.item() * 100,
+            2
+        )
     }
