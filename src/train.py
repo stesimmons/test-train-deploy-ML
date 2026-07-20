@@ -1,67 +1,64 @@
 import os
+
 import torch
 import torch.nn as nn
-import torchvision
 import torchvision.transforms as transforms
+
+from torchvision.datasets import Food101
 
 from app.model import Net
 
-# Create directories if they don't exist
+
 os.makedirs("models", exist_ok=True)
 os.makedirs("data", exist_ok=True)
 
-import os
-import sys
+transform = transforms.Compose([
+    transforms.Resize((128, 128)),
+    transforms.ToTensor()
+])
 
-sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..")
-    )
-)
-
-# Fashion-MNIST preprocessing
-transform = transforms.ToTensor()
-
-# Training dataset
-trainset = torchvision.datasets.FashionMNIST(
+trainset = Food101(
     root="./data",
-    train=True,
+    split="train",
     download=True,
     transform=transform
 )
 
-# Test dataset
-testset = torchvision.datasets.FashionMNIST(
+testset = Food101(
     root="./data",
-    train=False,
+    split="test",
     download=True,
     transform=transform
 )
 
 trainloader = torch.utils.data.DataLoader(
     trainset,
-    batch_size=64,
+    batch_size=32,
     shuffle=True
 )
 
 testloader = torch.utils.data.DataLoader(
     testset,
-    batch_size=64,
+    batch_size=32,
     shuffle=False
 )
 
-# Load CNN model
 model = Net()
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters())
 
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.0001
+)
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 1
 
-print("Starting Fashion-MNIST training...")
+print("Starting Food-101 training...")
 
 for epoch in range(NUM_EPOCHS):
+
+    model.train()
 
     running_loss = 0.0
 
@@ -86,7 +83,6 @@ for epoch in range(NUM_EPOCHS):
         f"Loss: {avg_loss:.4f}"
     )
 
-# Evaluate model
 model.eval()
 
 correct = 0
@@ -102,16 +98,17 @@ with torch.no_grad():
 
         total += labels.size(0)
 
-        correct += (predicted == labels).sum().item()
+        correct += (
+            predicted == labels
+        ).sum().item()
 
 accuracy = 100 * correct / total
 
-print(f"Fashion-MNIST Accuracy: {accuracy:.2f}%")
+print(f"Food-101 Accuracy: {accuracy:.2f}%")
 
-# Save model
 torch.save(
     model.state_dict(),
-    "models/fashion_mnist.pth"
+    "models/food101.pth"
 )
 
-print("Model saved to models/fashion_mnist.pth")
+print("Model saved to models/food101.pth")
