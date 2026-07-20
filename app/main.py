@@ -2,15 +2,33 @@ import os
 
 from fastapi import FastAPI
 
+print("STEP 1")
+
+import torch
+
+print("STEP 2")
+
+from app.model import Net
+
+print("STEP 3")
+
 app = FastAPI()
 
 MODEL_PATH = "models/food101.pth"
+
+model_exists = os.path.exists(MODEL_PATH)
+
+print(f"MODEL EXISTS: {model_exists}")
+
+model = Net()
+
+print("STEP 4: MODEL CREATED")
 
 
 @app.get("/")
 def home():
     return {
-        "message": "FOOD101_TEST_DEPLOYMENT"
+        "message": "FOOD101_MODEL_TEST"
     }
 
 
@@ -24,25 +42,14 @@ def health():
 @app.get("/food-test")
 def food_test():
     return {
-        "status": "food101 deployment active"
+        "status": "active"
     }
 
 
 @app.get("/model-info")
 def model_info():
 
-    exists = os.path.exists(MODEL_PATH)
-
-    size_mb = 0
-
-    if exists:
-        size_mb = round(
-            os.path.getsize(MODEL_PATH) / 1024 / 1024,
-            2
-        )
-
     return {
-        "deployment": "food101-test",
-        "model_exists": exists,
-        "model_size_mb": size_mb
+        "deployment": "food101-model-test",
+        "model_exists": model_exists
     }
