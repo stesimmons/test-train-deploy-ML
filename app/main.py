@@ -32,29 +32,68 @@ model.eval()
 
 @app.get("/")
 def home():
+
     return {
-        "message": "FOOD101_LIVE"
+        "message": "Food-101 Classifier API"
     }
 
 
 @app.get("/health")
 def health():
+
     return {
         "status": "healthy"
     }
 
 
-@app.get("/food-test")
-def food_test():
-    return {
-        "status": "food101 active"
-    }
-
-
 @app.get("/model-info")
 def model_info():
+
     return {
         "model_name": "Food-101 CNN",
         "num_classes": len(CLASSES),
         "model_loaded": True
+    }
+
+
+@app.post("/predict")
+async def predict(
+    file: UploadFile = File(...)
+):
+
+    image = Image.open(
+        file.file
+    ).convert("RGB")
+
+    transform = transforms.Compose([
+        transforms.Resize((128, 128)),
+        transforms.ToTensor()
+    ])
+
+    image_tensor = (
+        transform(image)
+        .unsqueeze(0)
+    )
+
+    with torch.no_grad():
+
+        output = model(image_tensor)
+
+        probabilities = F.softmax(
+            output,
+            dim=1
+        )
+
+        confidence, prediction = torch.max(
+            probabilities,
+            dim=1
+        )
+
+    return {
+        "class_id": prediction.item(),
+        "class_name": CLASSES[prediction.item()],
+        "confidence": round(
+            confidence.item() * 100,
+            2
+        )
     }
