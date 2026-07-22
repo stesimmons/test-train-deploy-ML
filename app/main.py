@@ -52,7 +52,8 @@ def model_info():
     return {
         "model_name": "Food-101 CNN",
         "num_classes": len(CLASSES),
-        "model_loaded": True
+        "model_loaded": True,
+        "build": "food101-predict-v1"
     }
 
 
