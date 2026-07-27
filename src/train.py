@@ -1,163 +1,117 @@
 import os
-
 import torch
 import torch.nn as nn
-
+import torchvision
 import torchvision.transforms as transforms
-from torchvision.datasets import Food101
-
-from torch.utils.data import DataLoader
-from torch.utils.data import Subset
 
 from app.model import Net
 
+# Create directories if they don't exist
+os.makedirs("models", exist_ok=True)
+os.makedirs("data", exist_ok=True)
 
-def main():
+import os
+import sys
 
-    os.makedirs("models", exist_ok=True)
-    os.makedirs("data", exist_ok=True)
-
-    transform = transforms.Compose([
-        transforms.Resize((128, 128)),
-        transforms.ToTensor()
-    ])
-
-    print("Loading Food-101 training dataset...")
-
-    trainset = Food101(
-        root="./data",
-        split="train",
-        download=True,
-        transform=transform
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..")
     )
+)
 
-    print("Loading Food-101 test dataset...")
+# Fashion-MNIST preprocessing
+transform = transforms.ToTensor()
 
-    testset = Food101(
-        root="./data",
-        split="test",
-        download=True,
-        transform=transform
-    )
+# Training dataset
+trainset = torchvision.datasets.FashionMNIST(
+    root="./data",
+    train=True,
+    download=True,
+    transform=transform
+)
 
-    # Smaller subset for initial testing
-    trainset = Subset(trainset, range(5000))
-    testset = Subset(testset, range(1000))
+# Test dataset
+testset = torchvision.datasets.FashionMNIST(
+    root="./data",
+    train=False,
+    download=True,
+    transform=transform
+)
 
-    print(f"Training samples: {len(trainset)}")
-    print(f"Testing samples: {len(testset)}")
+trainloader = torch.utils.data.DataLoader(
+    trainset,
+    batch_size=64,
+    shuffle=True
+)
 
-    trainloader = DataLoader(
-        trainset,
-        batch_size=32,
-        shuffle=True,
-        num_workers=0
-    )
+testloader = torch.utils.data.DataLoader(
+    testset,
+    batch_size=64,
+    shuffle=False
+)
 
-    testloader = DataLoader(
-        testset,
-        batch_size=32,
-        shuffle=False,
-        num_workers=0
-    )
+# Load CNN model
+model = Net()
 
-    model = Net()
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters())
 
-    criterion = nn.CrossEntropyLoss()
 
-    optimizer = torch.optim.Adam(
-        model.parameters(),
-        lr=0.0001
-    )
+NUM_EPOCHS = 1
 
-    NUM_EPOCHS = 5
+print("Starting Fashion-MNIST training...")
 
-    print("Starting Food-101 training...")
+for epoch in range(NUM_EPOCHS):
 
-    for epoch in range(NUM_EPOCHS):
+    running_loss = 0.0
 
-        model.train()
+    for images, labels in trainloader:
 
-        running_loss = 0.0
+        optimizer.zero_grad()
 
-        for batch_idx, (images, labels) in enumerate(trainloader):
+        outputs = model(images)
 
-            optimizer.zero_grad()
+        loss = criterion(outputs, labels)
 
-            outputs = model(images)
+        loss.backward()
 
-            loss = criterion(
-                outputs,
-                labels
-            )
+        optimizer.step()
 
-            loss.backward()
+        running_loss += loss.item()
 
-            optimizer.step()
-
-            running_loss += loss.item()
-
-            if batch_idx % 100 == 0:
-
-                print(
-                    f"Epoch {epoch + 1} | "
-                    f"Batch {batch_idx}/{len(trainloader)} | "
-                    f"Loss: {loss.item():.4f}"
-                )
-
-        avg_loss = (
-            running_loss /
-            len(trainloader)
-        )
-
-        print(
-            f"Epoch [{epoch + 1}/{NUM_EPOCHS}] "
-            f"Loss: {avg_loss:.4f}"
-        )
-
-    print("Evaluating model...")
-
-    model.eval()
-
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-
-        for images, labels in testloader:
-
-            outputs = model(images)
-
-            _, predicted = torch.max(
-                outputs,
-                1
-            )
-
-            total += labels.size(0)
-
-            correct += (
-                predicted == labels
-            ).sum().item()
-
-    accuracy = (
-        100 * correct / total
-    )
+    avg_loss = running_loss / len(trainloader)
 
     print(
-        f"Food-101 Accuracy: "
-        f"{accuracy:.2f}%"
+        f"Epoch [{epoch + 1}/{NUM_EPOCHS}] "
+        f"Loss: {avg_loss:.4f}"
     )
 
-    torch.save(
-        model.state_dict(),
-        "models/food101.pth"
-    )
+# Evaluate model
+model.eval()
 
-    print(
-        "Model saved to "
-        "models/food101.pth"
-    )
+correct = 0
+total = 0
 
+with torch.no_grad():
 
-if __name__ == "__main__":
-    main()
+    for images, labels in testloader:
+
+        outputs = model(images)
+
+        _, predicted = torch.max(outputs, 1)
+
+        total += labels.size(0)
+
+        correct += (predicted == labels).sum().item()
+
+accuracy = 100 * correct / total
+
+print(f"Fashion-MNIST Accuracy: {accuracy:.2f}%")
+
+# Save model
+torch.save(
+    model.state_dict(),
+    "models/fashion_mnist.pth"
+)
+
+print("Model saved to models/fashion_mnist.pth")
