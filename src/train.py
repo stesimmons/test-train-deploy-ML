@@ -2,7 +2,6 @@ import json
 import os
 
 import mlflow
-import mlflow.pytorch
 
 import torch
 import torch.nn as nn
@@ -18,6 +17,24 @@ from app.model import Net
 def main():
 
     os.makedirs("models", exist_ok=True)
+
+    tracking_dir = os.path.abspath("mlruns")
+
+    tracking_uri = (
+        f"file:///{tracking_dir.replace(os.sep, '/')}"
+    )
+
+    mlflow.set_tracking_uri(
+        tracking_uri
+    )
+
+    print(
+        f"Tracking Directory: {tracking_dir}"
+    )
+
+    print(
+        f"Tracking URI: {mlflow.get_tracking_uri()}"
+    )
 
     transform = transforms.Compose([
         transforms.ToTensor()
@@ -70,13 +87,40 @@ def main():
 
     num_epochs = 5
 
-    mlflow.set_experiment("fashion-mnist")
+    mlflow.set_experiment(
+        "fashion-mnist"
+    )
+
+    print(
+        "Experiment configured"
+    )
 
     with mlflow.start_run():
 
-        mlflow.log_param("epochs", num_epochs)
-        mlflow.log_param("batch_size", 64)
-        mlflow.log_param("learning_rate", 0.001)
+        print(
+            f"Run ID: "
+            f"{mlflow.active_run().info.run_id}"
+        )
+
+        print(
+            f"Artifact URI: "
+            f"{mlflow.get_artifact_uri()}"
+        )
+
+        mlflow.log_param(
+            "epochs",
+            num_epochs
+        )
+
+        mlflow.log_param(
+            "batch_size",
+            64
+        )
+
+        mlflow.log_param(
+            "learning_rate",
+            0.001
+        )
 
         print("Starting training...")
 
@@ -172,14 +216,27 @@ def main():
             "models/fashion_mnist.pth"
         )
 
+        model_path = os.path.abspath(
+            "models/fashion_mnist.pth"
+        )
+
+        print(
+            f"Model Path: {model_path}"
+        )
+
         mlflow.log_artifact(
-            os.path.abspath(
-                "models/fashion_mnist.pth"
-            )
+            model_path
+        )
+
+        print(
+            "Model artifact logged successfully"
         )
 
         metrics = {
-            "accuracy": round(accuracy, 2),
+            "accuracy": round(
+                accuracy,
+                2
+            ),
             "epochs": num_epochs,
             "batch_size": 64,
             "learning_rate": 0.001
