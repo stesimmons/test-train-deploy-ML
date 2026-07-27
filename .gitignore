@@ -1,4 +1,15 @@
+# Virtual environment
 .venv/
+
+# Python cache
 __pycache__/
 *.pyc
+
+# Downloaded datasets
 data/
+
+# Generated training metrics
+metrics.json
+
+# MLFlow experiment files
+mlruns/

@@ -1,53 +1,54 @@
-# .github/workflows/ci.yml
-
-name: Fashion-MNIST CI Pipeline
+name: ML Pipeline
 
 on:
   push:
     branches:
       - main
 
-  pull_request:
-    branches:
-      - main
-
 jobs:
-  test-train:
+
+  train-test-deploy:
 
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Unit Tests
-        run: |
-          pytest
-
-      - name: Train Fashion-MNIST Model
+      - name: Train Model
         run: |
           python -m src.train
 
-      - name: Upload Trained Model
+      - name: Check Accuracy
+        run: |
+          python check_accuracy.py
+
+      - name: Run Tests
+        run: |
+          pytest
+
+      - name: Upload Model Artifact
         uses: actions/upload-artifact@v4
         with:
           name: fashion-mnist-model
           path: models/fashion_mnist.pth
 
-      - name: Trigger Render Deployment
+      - name: Upload Metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-metrics
+          path: metrics.json
+
+      - name: Deploy To Render
         run: |
           curl "$RENDER_DEPLOY_HOOK"
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
-
