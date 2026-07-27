@@ -6,6 +6,8 @@ from fastapi import UploadFile, File
 from PIL import Image
 import torchvision.transforms as transforms
 import torch.nn.functional as F
+from PIL import UnidentifiedImageError
+from fastapi import HTTPException
 
 app = FastAPI()
 
@@ -48,7 +50,13 @@ def health():
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
 
-    image = Image.open(file.file).convert("L")
+    try:
+        image = Image.open(file.file).convert("L")
+    except UnidentifiedImageError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image file"
+        )
 
     transform = transforms.Compose([
         transforms.Resize((28, 28)),

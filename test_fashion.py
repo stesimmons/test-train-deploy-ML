@@ -23,8 +23,8 @@ dataset = FashionMNIST(
 
 image, label = dataset[3]
 
-image.save("fashion_test.png")
+image.save("test_image.png")
 
 print(f"Label: {label}")
 print(f"Class: {classes[label]}")
-print("Saved: fashion_test.png")
+print("Saved: test_image.png")

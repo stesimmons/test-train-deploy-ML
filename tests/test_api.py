@@ -1,3 +1,8 @@
+# This test script tests the api endpoints, invalid uploads, that the model file exists, 
+# that the model loads, output shape, confidence range, and that the correct fashion classes are present.
+#
+# The purpose of these tests are to showcase automated testing through github actions.
+
 from fastapi.testclient import TestClient
 from app.main import app
 from io import BytesIO
@@ -12,7 +17,7 @@ def test_home():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "message" in response.json()
+    assert "status" in response.json()
 
 def test_health():
 
@@ -51,7 +56,7 @@ def test_predict_rejects_invalid_file():
         }
     )
 
-    assert response.status_code in [400, 422, 500]
+    assert response.status_code == 400
 
 
 def test_model_file_exists():
@@ -134,6 +139,8 @@ def test_confidence_range():
     data = response.json()
 
     assert 0 <= data["confidence"] <= 100
+
+
 
 EXPECTED_CLASSES = [
     "T-shirt/top",
