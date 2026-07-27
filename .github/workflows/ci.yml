@@ -23,6 +23,12 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      
+      - name: Enable MLflow File Store
+        run: |
+          echo "MLFLOW_ALLOW_FILE_STORE=true" >> $GITHUB_ENV
+
+
       - name: Train Model
         run: |
           python -m src.train
