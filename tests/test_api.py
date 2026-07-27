@@ -119,7 +119,7 @@ def test_prediction_schema():
 def test_confidence_range():
 
     with open(
-        "tests/data/test_image.png",
+        "tests/test_image.png",
         "rb"
     ) as f:
 
