@@ -1,3 +1,5 @@
+# This script pulls an image from Fashion Mnist data set to test the model
+
 from torchvision.datasets import FashionMNIST
 
 classes = [
