@@ -57,7 +57,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters())
 
 
-NUM_EPOCHS = 1
+NUM_EPOCHS = 10
 
 print("Starting Fashion-MNIST training...")
 
