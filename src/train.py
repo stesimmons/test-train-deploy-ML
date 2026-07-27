@@ -173,7 +173,9 @@ def main():
         )
 
         mlflow.log_artifact(
-            "models/fashion_mnist.pth"
+            os.path.abspath(
+                "models/fashion_mnist.pth"
+            )
         )
 
         metrics = {
