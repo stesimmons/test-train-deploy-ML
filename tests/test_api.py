@@ -95,7 +95,7 @@ def test_model_output_shape():
 def test_prediction_schema():
 
     with open(
-        "tests/data/test_image.png",
+        "tests/test_image.png",
         "rb"
     ) as f:
 
