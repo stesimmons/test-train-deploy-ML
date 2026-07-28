@@ -18,24 +18,6 @@ def main():
 
     os.makedirs("models", exist_ok=True)
 
-    tracking_dir = os.path.abspath("mlruns")
-
-    tracking_uri = (
-        f"file:///{tracking_dir.replace(os.sep, '/')}"
-    )
-
-    mlflow.set_tracking_uri(
-        tracking_uri
-    )
-
-    print(
-        f"Tracking Directory: {tracking_dir}"
-    )
-
-    print(
-        f"Tracking URI: {mlflow.get_tracking_uri()}"
-    )
-
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
@@ -91,21 +73,7 @@ def main():
         "fashion-mnist"
     )
 
-    print(
-        "Experiment configured"
-    )
-
     with mlflow.start_run():
-
-        print(
-            f"Run ID: "
-            f"{mlflow.active_run().info.run_id}"
-        )
-
-        print(
-            f"Artifact URI: "
-            f"{mlflow.get_artifact_uri()}"
-        )
 
         mlflow.log_param(
             "epochs",
@@ -216,20 +184,8 @@ def main():
             "models/fashion_mnist.pth"
         )
 
-        model_path = os.path.abspath(
-            "models/fashion_mnist.pth"
-        )
-
-        print(
-            f"Model Path: {model_path}"
-        )
-
         mlflow.log_artifact(
-            model_path
-        )
-
-        print(
-            "Model artifact logged successfully"
+            "models/fashion_mnist.pth"
         )
 
         metrics = {
