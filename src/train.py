@@ -184,9 +184,21 @@ def main():
             "models/fashion_mnist.pth"
         )
 
-        mlflow.log_artifact(
-            "models/fashion_mnist.pth"
-        )
+        try:
+
+            mlflow.log_artifact(
+                "models/fashion_mnist.pth"
+            )
+
+            print(
+                "Model artifact logged to MLflow"
+            )
+
+        except Exception as e:
+
+            print(
+                f"MLflow artifact logging skipped: {e}"
+            )
 
         metrics = {
             "accuracy": round(

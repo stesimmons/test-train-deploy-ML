@@ -33,6 +33,12 @@ jobs:
         run: |
           python -m src.train
 
+      - name: Upload MLflow Runs
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-runs-${{ github.run_number }}
+          path: mlruns/
+
       - name: Check Accuracy
         run: |
           python check_accuracy.py
