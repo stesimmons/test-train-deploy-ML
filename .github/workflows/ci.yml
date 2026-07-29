@@ -33,6 +33,15 @@ jobs:
         run: |
           python -m src.train
 
+      - name: Find MLflow Files
+        run: |
+          find . -type d -name "mlruns"
+
+      - name: List Repository Files
+        run: |
+          pwd
+          ls -R
+
       - name: Upload MLflow Runs
         uses: actions/upload-artifact@v4
         with:

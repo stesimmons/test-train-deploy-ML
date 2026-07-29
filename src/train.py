@@ -18,6 +18,14 @@ def main():
 
     os.makedirs("models", exist_ok=True)
 
+    mlflow.set_tracking_uri(
+        "file:./mlruns"
+    )
+
+    print(
+        f"Tracking URI: {mlflow.get_tracking_uri()}"
+    )
+
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
@@ -224,6 +232,11 @@ def main():
         print(
             "Metrics saved to metrics.json"
         )
+
+    print(
+        f"MLruns directory exists: "
+        f"{os.path.exists('mlruns')}"
+    )
 
 
 if __name__ == "__main__":
