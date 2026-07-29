@@ -26,9 +26,12 @@ PROJECT_ROOT = Path(__file__).parent
 
 MLRUNS_DIR = PROJECT_ROOT / "mlruns"
 
-STATE_FILE = PROJECT_ROOT / ".mlflow_sync_state.json"
+STATE_FILE = (
+    PROJECT_ROOT
+    / ".mlflow_sync_state.json"
+)
 
-headers = {
+HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
     "Accept": "application/vnd.github+json"
 }
@@ -39,17 +42,29 @@ def load_last_run():
     if not STATE_FILE.exists():
         return None
 
-    with open(STATE_FILE, "r") as f:
+    with open(
+        STATE_FILE,
+        "r"
+    ) as f:
+
         data = json.load(f)
 
-    return data.get("last_run_id")
+    return data.get(
+        "last_run_id"
+    )
 
 
 def save_last_run(run_id):
 
-    with open(STATE_FILE, "w") as f:
+    with open(
+        STATE_FILE,
+        "w"
+    ) as f:
+
         json.dump(
-            {"last_run_id": run_id},
+            {
+                "last_run_id": run_id
+            },
             f
         )
 
@@ -63,17 +78,25 @@ def get_latest_successful_run():
 
     response = requests.get(
         url,
-        headers=headers,
+        headers=HEADERS,
         timeout=30
     )
 
     response.raise_for_status()
 
-    runs = response.json()["workflow_runs"]
+    runs = response.json()[
+        "workflow_runs"
+    ]
 
     for run in runs:
 
-        if run["conclusion"] == "success":
+        if (
+            run["status"]
+            == "completed"
+            and
+            run["conclusion"]
+            == "success"
+        ):
             return run
 
     return None
@@ -89,13 +112,15 @@ def download_mlflow_artifact(run_id):
 
     response = requests.get(
         url,
-        headers=headers,
+        headers=HEADERS,
         timeout=30
     )
 
     response.raise_for_status()
 
-    artifacts = response.json()["artifacts"]
+    artifacts = response.json()[
+        "artifacts"
+    ]
 
     artifact = None
 
@@ -108,38 +133,54 @@ def download_mlflow_artifact(run_id):
             break
 
     if artifact is None:
+
         print(
             "No mlflow-runs artifact found."
         )
-        return
+
+        return False
 
     print(
         f"Downloading: "
         f"{artifact['name']}"
     )
 
-    zip_data = requests.get(
-        artifact["archive_download_url"],
-        headers=headers,
+    zip_response = requests.get(
+        artifact[
+            "archive_download_url"
+        ],
+        headers=HEADERS,
         timeout=60
     )
 
-    zip_data.raise_for_status()
+    zip_response.raise_for_status()
 
     if MLRUNS_DIR.exists():
-        shutil.rmtree(MLRUNS_DIR)
+
+        shutil.rmtree(
+            MLRUNS_DIR
+        )
+
+    MLRUNS_DIR.mkdir(
+        exist_ok=True
+    )
 
     with zipfile.ZipFile(
-        io.BytesIO(zip_data.content)
+        io.BytesIO(
+            zip_response.content
+        )
     ) as z:
 
         z.extractall(
-            PROJECT_ROOT
+            MLRUNS_DIR
         )
 
     print(
-        "MLflow runs updated."
+        f"MLflow runs extracted to: "
+        f"{MLRUNS_DIR}"
     )
+
+    return True
 
 
 def main():
@@ -148,37 +189,56 @@ def main():
         "MLflow watcher started."
     )
 
-    last_run_id = load_last_run()
+    last_run_id = (
+        load_last_run()
+    )
 
     while True:
 
         try:
 
-            run = get_latest_successful_run()
+            run = (
+                get_latest_successful_run()
+            )
 
             if run:
 
-                current_run_id = run["id"]
+                current_run_id = (
+                    run["id"]
+                )
 
                 if (
                     last_run_id is None
-                    or current_run_id != last_run_id
+                    or current_run_id
+                    != last_run_id
                 ):
 
                     print(
-                        f"New workflow detected: "
+                        "New workflow detected: "
                         f"{current_run_id}"
                     )
 
-                    download_mlflow_artifact(
-                        current_run_id
+                    success = (
+                        download_mlflow_artifact(
+                            current_run_id
+                        )
                     )
 
-                    save_last_run(
-                        current_run_id
-                    )
+                    if success:
 
-                    last_run_id = current_run_id
+                        save_last_run(
+                            current_run_id
+                        )
+
+                        last_run_id = (
+                            current_run_id
+                        )
+
+                else:
+
+                    print(
+                        "No new workflow."
+                    )
 
             time.sleep(
                 CHECK_INTERVAL
