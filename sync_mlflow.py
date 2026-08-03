@@ -22,9 +22,7 @@ if not TOKEN:
 
 PROJECT_ROOT = Path(__file__).parent
 MLRUNS_DIR = PROJECT_ROOT / "mlruns"
-
-if MLRUNS_DIR.exists():
-    shutil.rmtree(MLRUNS_DIR)
+TEMP_DIR = PROJECT_ROOT / "temp_mlflow_extract"
 
 headers = {
     "Authorization": f"Bearer {TOKEN}",
@@ -100,18 +98,42 @@ zip_response = requests.get(
     timeout=60
 )
 
+if TEMP_DIR.exists():
+    shutil.rmtree(TEMP_DIR)
+
+TEMP_DIR.mkdir()
+
 with zipfile.ZipFile(
     io.BytesIO(zip_response.content)
 ) as z:
 
-    z.extractall(PROJECT_ROOT)
+    z.extractall(TEMP_DIR)
+
+if MLRUNS_DIR.exists():
+    shutil.rmtree(MLRUNS_DIR)
+
+MLRUNS_DIR.mkdir()
+
+for item in TEMP_DIR.iterdir():
+
+    shutil.move(
+        str(item),
+        str(MLRUNS_DIR / item.name)
+    )
+
+shutil.rmtree(TEMP_DIR)
 
 print("Artifact extracted.")
 
 print("Starting MLflow UI...")
 
 subprocess.Popen(
-    ["mlflow", "ui"]
+    [
+        "mlflow",
+        "ui",
+        "--backend-store-uri",
+        str(MLRUNS_DIR)
+    ]
 )
 
 webbrowser.open(
