@@ -214,5 +214,7 @@ def model_info():
         "model": "Fashion-MNIST Production Model",
         "architecture": BEST_ARCHITECTURE,
         "model_loaded": MODEL_LOADED,
+        "model_exists": os.path.exists(MODEL_PATH),
+        "metrics_exists": os.path.exists(METRICS_PATH),
         "classes": CLASSES
     }
