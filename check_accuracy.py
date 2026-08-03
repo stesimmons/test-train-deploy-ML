@@ -10,7 +10,7 @@ with open(
 
     metrics = json.load(f)
 
-accuracy = metrics["accuracy"]
+accuracy = metrics["best_accuracy"]
 
 if accuracy < MIN_ACCURACY:
 

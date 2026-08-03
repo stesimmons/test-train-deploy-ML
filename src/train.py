@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import mlflow
 
@@ -59,7 +60,9 @@ def train_and_evaluate(
             0.001
         )
 
-        print(f"\nTraining {architecture}")
+        print(
+            f"\nTraining {architecture}"
+        )
 
         for epoch in range(num_epochs):
 
@@ -88,12 +91,18 @@ def train_and_evaluate(
                 running_loss += loss.item()
 
             avg_loss = (
-                running_loss /
-                len(trainloader)
+                running_loss
+                / len(trainloader)
+            )
+
+            print(
+                f"{architecture} | "
+                f"Epoch [{epoch + 1}/{num_epochs}] "
+                f"Loss: {avg_loss:.4f}"
             )
 
             mlflow.log_metric(
-                f"epoch_{epoch+1}_loss",
+                f"epoch_{epoch + 1}_loss",
                 avg_loss
             )
 
@@ -146,11 +155,14 @@ def train_and_evaluate(
                 model_path
             )
 
-        except Exception:
-            pass
+        except Exception as e:
+
+            print(
+                f"MLflow artifact logging skipped: {e}"
+            )
 
         print(
-            f"{architecture}: "
+            f"{architecture} Accuracy: "
             f"{accuracy:.2f}%"
         )
 
@@ -168,6 +180,11 @@ def main():
         "file:./mlruns"
     )
 
+    print(
+        f"Tracking URI: "
+        f"{mlflow.get_tracking_uri()}"
+    )
+
     mlflow.set_experiment(
         "fashion-mnist"
     )
@@ -175,6 +192,10 @@ def main():
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
+
+    print(
+        "Loading Fashion-MNIST dataset..."
+    )
 
     trainset = datasets.FashionMNIST(
         root="./data",
@@ -208,6 +229,10 @@ def main():
         else "cpu"
     )
 
+    print(
+        f"Using device: {device}"
+    )
+
     experiments = [
 
         (
@@ -232,11 +257,11 @@ def main():
 
         accuracy, model_path = (
             train_and_evaluate(
-                model.to(device),
-                architecture,
-                trainloader,
-                testloader,
-                device
+                model=model.to(device),
+                architecture=architecture,
+                trainloader=trainloader,
+                testloader=testloader,
+                device=device
             )
         )
 
@@ -249,22 +274,20 @@ def main():
         )
 
     results.sort(
+        key=lambda x: x[0],
         reverse=True
     )
 
     best_accuracy = results[0][0]
     best_architecture = results[0][1]
-    best_model = results[0][2]
-
-    import shutil
+    best_model_path = results[0][2]
 
     shutil.copyfile(
-        best_model,
+        best_model_path,
         "models/production-model.pth"
     )
 
     metrics = {
-
         "best_architecture":
             best_architecture,
 
@@ -277,14 +300,14 @@ def main():
         "all_results": [
 
             {
-                "architecture": r[1],
+                "architecture": result[1],
                 "accuracy": round(
-                    r[0],
+                    result[0],
                     2
                 )
             }
 
-            for r in results
+            for result in results
         ]
     }
 
@@ -299,14 +322,33 @@ def main():
             indent=4
         )
 
+    print("\nTraining Summary")
+
+    for result in results:
+
+        print(
+            f"{result[1]}: "
+            f"{result.2f}%"
+        )
+
     print(
         f"\nBest Model: "
         f"{best_architecture}"
     )
 
     print(
-        f"Accuracy: "
+        f"Best Accuracy: "
         f"{best_accuracy:.2f}%"
+    )
+
+    print(
+        "Production model saved to "
+        "models/production-model.pth"
+    )
+
+    print(
+        f"MLruns directory exists: "
+        f"{os.path.exists('mlruns')}"
     )
 
 

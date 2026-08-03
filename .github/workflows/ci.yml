@@ -6,22 +6,27 @@ on:
       - main
 
 jobs:
-
   train-test-deploy:
 
     runs-on: ubuntu-latest
 
     steps:
 
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
+
+      - name: Run Unit Tests
+        run: |
+          pytest
 
       - name: Enable MLflow File Store
         run: |
@@ -35,6 +40,10 @@ jobs:
         run: |
           ls -R mlruns
 
+      - name: Validate Best Model Accuracy
+        run: |
+          python check_accuracy.py
+
       - name: Upload MLflow Runs
         uses: actions/upload-artifact@v4
         with:
@@ -47,7 +56,7 @@ jobs:
           name: best-model
           path: models/production-model.pth
 
-      - name: Upload All Trained Models
+      - name: Upload All Models
         uses: actions/upload-artifact@v4
         with:
           name: all-models
@@ -59,16 +68,8 @@ jobs:
           name: benchmark-results
           path: metrics.json
 
-      - name: Check Accuracy
-        run: |
-          python check_accuracy.py
-
-      - name: Run Tests
-        run: |
-          pytest
-
       - name: Deploy To Render
-        run: |
-          curl "$RENDER_DEPLOY_HOOK"
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          curl "$RENDER_DEPLOY_HOOK"
