@@ -1,6 +1,18 @@
 {
-    "accuracy": 90.83,
-    "epochs": 5,
-    "batch_size": 64,
-    "learning_rate": 0.001
+    "best_architecture": "DeepCNN",
+    "best_accuracy": 92.48,
+    "all_results": [
+        {
+            "architecture": "DeepCNN",
+            "accuracy": 92.48
+        },
+        {
+            "architecture": "WiderCNN",
+            "accuracy": 91.28
+        },
+        {
+            "architecture": "BaselineCNN",
+            "accuracy": 90.37
+        }
+    ]
 }
