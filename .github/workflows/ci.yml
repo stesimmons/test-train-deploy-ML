@@ -11,16 +11,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        architecture:
-          - BaselineCNN
-          - WiderCNN
-          - DeepCNN
-
-    env:
-      MODEL_ARCHITECTURE: ${{ matrix.architecture }}
-
     steps:
 
       - uses: actions/checkout@v4
@@ -37,23 +27,37 @@ jobs:
         run: |
           echo "MLFLOW_ALLOW_FILE_STORE=true" >> $GITHUB_ENV
 
-      - name: Train Model
+      - name: Train All Architectures
         run: |
           python -m src.train
 
-      - name: Find MLflow Files
-        run: |
-          find . -type d -name "mlruns"
-
-      - name: Verify MLruns
+      - name: Verify MLflow Runs
         run: |
           ls -R mlruns
 
       - name: Upload MLflow Runs
         uses: actions/upload-artifact@v4
         with:
-          name: mlflow-runs-${{ matrix.architecture }}-${{ github.run_number }}
+          name: mlflow-runs-${{ github.run_number }}
           path: mlruns/
+
+      - name: Upload Best Model
+        uses: actions/upload-artifact@v4
+        with:
+          name: best-model
+          path: models/production-model.pth
+
+      - name: Upload All Trained Models
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-models
+          path: models/*.pth
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: metrics.json
 
       - name: Check Accuracy
         run: |
@@ -63,20 +67,7 @@ jobs:
         run: |
           pytest
 
-      - name: Upload Model Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fashion-mnist-model-${{ matrix.architecture }}
-          path: models/*.pth
-
-      - name: Upload Metrics
-        uses: actions/upload-artifact@v4
-        with:
-          name: training-metrics-${{ matrix.architecture }}
-          path: metrics.json
-
       - name: Deploy To Render
-        if: matrix.architecture == 'DeepCNN'
         run: |
           curl "$RENDER_DEPLOY_HOOK"
         env:

@@ -68,7 +68,6 @@ class DeepCNN(nn.Module):
         super().__init__()
 
         self.conv = nn.Sequential(
-
             nn.Conv2d(1, 32, 3, padding=1),
             nn.ReLU(),
 
@@ -98,7 +97,3 @@ class DeepCNN(nn.Module):
         x = x.view(x.size(0), -1)
 
         return self.fc(x)
-
-
-
-Net = BaselineCNN
