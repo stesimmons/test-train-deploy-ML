@@ -11,6 +11,16 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        architecture:
+          - BaselineCNN
+          - WiderCNN
+          - DeepCNN
+
+    env:
+      MODEL_ARCHITECTURE: ${{ matrix.architecture }}
+
     steps:
 
       - uses: actions/checkout@v4
@@ -23,11 +33,9 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      
       - name: Enable MLflow File Store
         run: |
           echo "MLFLOW_ALLOW_FILE_STORE=true" >> $GITHUB_ENV
-
 
       - name: Train Model
         run: |
@@ -37,15 +45,14 @@ jobs:
         run: |
           find . -type d -name "mlruns"
 
-      - name: List Repository Files
+      - name: Verify MLruns
         run: |
-          pwd
-          ls -R
+          ls -R mlruns
 
       - name: Upload MLflow Runs
         uses: actions/upload-artifact@v4
         with:
-          name: mlflow-runs-${{ github.run_number }}
+          name: mlflow-runs-${{ matrix.architecture }}-${{ github.run_number }}
           path: mlruns/
 
       - name: Check Accuracy
@@ -59,16 +66,17 @@ jobs:
       - name: Upload Model Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fashion-mnist-model
-          path: models/fashion_mnist.pth
+          name: fashion-mnist-model-${{ matrix.architecture }}
+          path: models/*.pth
 
       - name: Upload Metrics
         uses: actions/upload-artifact@v4
         with:
-          name: training-metrics
+          name: training-metrics-${{ matrix.architecture }}
           path: metrics.json
 
       - name: Deploy To Render
+        if: matrix.architecture == 'DeepCNN'
         run: |
           curl "$RENDER_DEPLOY_HOOK"
         env:

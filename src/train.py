@@ -11,7 +11,11 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
 
-from app.model import Net
+from app.model import (
+    BaselineCNN,
+    WiderCNN,
+    DeepCNN
+)
 
 
 def main():
@@ -22,8 +26,17 @@ def main():
         "file:./mlruns"
     )
 
+    architecture = os.getenv(
+        "MODEL_ARCHITECTURE",
+        "BaselineCNN"
+    )
+
     print(
         f"Tracking URI: {mlflow.get_tracking_uri()}"
+    )
+
+    print(
+        f"Architecture: {architecture}"
     )
 
     transform = transforms.Compose([
@@ -64,9 +77,27 @@ def main():
         else "cpu"
     )
 
-    print(f"Using device: {device}")
+    print(
+        f"Using device: {device}"
+    )
 
-    model = Net().to(device)
+    if architecture == "BaselineCNN":
+
+        model = BaselineCNN().to(device)
+
+    elif architecture == "WiderCNN":
+
+        model = WiderCNN().to(device)
+
+    elif architecture == "DeepCNN":
+
+        model = DeepCNN().to(device)
+
+    else:
+
+        raise ValueError(
+            f"Unknown architecture: {architecture}"
+        )
 
     criterion = nn.CrossEntropyLoss()
 
@@ -81,7 +112,14 @@ def main():
         "fashion-mnist"
     )
 
-    with mlflow.start_run():
+    with mlflow.start_run(
+        run_name=architecture
+    ):
+
+        mlflow.log_param(
+            "architecture",
+            architecture
+        )
 
         mlflow.log_param(
             "epochs",
@@ -141,7 +179,9 @@ def main():
                 avg_loss
             )
 
-        print("Evaluating model...")
+        print(
+            "Evaluating model..."
+        )
 
         model.eval()
 
@@ -182,20 +222,24 @@ def main():
             accuracy
         )
 
+        model_path = (
+            f"models/{architecture}.pth"
+        )
+
         torch.save(
             model.state_dict(),
-            "models/fashion_mnist.pth"
+            model_path
         )
 
         print(
-            "Model saved to "
-            "models/fashion_mnist.pth"
+            f"Model saved to "
+            f"{model_path}"
         )
 
         try:
 
             mlflow.log_artifact(
-                "models/fashion_mnist.pth"
+                model_path
             )
 
             print(
@@ -209,6 +253,7 @@ def main():
             )
 
         metrics = {
+            "architecture": architecture,
             "accuracy": round(
                 accuracy,
                 2
