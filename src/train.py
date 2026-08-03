@@ -324,12 +324,11 @@ def main():
 
     print("\nTraining Summary")
 
-    for result in results:
+    for accuracy, architecture, _ in results:
 
         print(
-            f"{result[1]}: "
-            f"{result.2f}%"
-        )
+            f"{architecture}: {accuracy:.2f}%"
+    )
 
     print(
         f"\nBest Model: "
