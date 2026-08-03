@@ -54,10 +54,10 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git add -f models/production/production-model.pth
+          git add models/
           git add metrics.json
 
-          git diff --cached --quiet || git commit -m "Auto-update production model"
+          git diff --cached --quiet || git commit -m "Auto-update model registry"
 
           git push
 
