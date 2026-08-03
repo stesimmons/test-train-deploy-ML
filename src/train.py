@@ -5,6 +5,7 @@ import shutil
 from datetime import datetime
 
 import mlflow
+from mlflow.tracking import MlflowClient
 
 import torch
 import torch.nn as nn
@@ -73,6 +74,7 @@ def train_and_evaluate(
         mlflow.set_tags({
             "architecture": architecture,
             "stage": "Candidate",
+            "registry_state": "Candidate",
             "version": MODEL_VERSION
         })
 
@@ -251,6 +253,10 @@ def main():
         else "cpu"
     )
 
+    print(
+        f"Using device: {device}"
+    )
+
     experiments = [
         (
             "BaselineCNN",
@@ -289,6 +295,26 @@ def main():
     best_architecture = results[0][1]
     best_model_path = results[0][2]
     best_run_id = results[0][3]
+
+    client = MlflowClient()
+
+    client.set_tag(
+        best_run_id,
+        "stage",
+        "Production"
+    )
+
+    client.set_tag(
+        best_run_id,
+        "registry_state",
+        "Production"
+    )
+
+    client.set_tag(
+        best_run_id,
+        "version",
+        MODEL_VERSION
+    )
 
     shutil.copyfile(
         best_model_path,
@@ -371,6 +397,11 @@ def main():
     print(
         f"Version: "
         f"{MODEL_VERSION}"
+    )
+
+    print(
+        f"Production Run ID: "
+        f"{best_run_id}"
     )
 
 
