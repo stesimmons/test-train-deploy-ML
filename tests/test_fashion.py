@@ -62,9 +62,10 @@ def test_predict_rejects_invalid_file():
         }
     )
 
-    assert response.status_code in [
-        400
-    ]
+    print(response.status_code)
+    print(response.text)
+
+    assert response.status_code == 400
 
 
 def test_baseline_model_output_shape():

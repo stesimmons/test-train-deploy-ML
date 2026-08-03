@@ -149,7 +149,7 @@ async def predict(
             file.file
         ).convert("L")
 
-    except UnidentifiedImageError:
+    except Exception:
 
         raise HTTPException(
             status_code=400,
