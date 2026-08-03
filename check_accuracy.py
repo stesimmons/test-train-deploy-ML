@@ -12,11 +12,25 @@ with open(
 
 accuracy = metrics["best_accuracy"]
 
+architecture = metrics.get(
+    "best_architecture",
+    "Unknown"
+)
+
+version = metrics.get(
+    "version",
+    "Unknown"
+)
+
+stage = metrics.get(
+    "stage",
+    "Unknown"
+)
+
 if accuracy < MIN_ACCURACY:
 
     print(
-        f"Accuracy "
-        f"{accuracy}% "
+        f"Accuracy {accuracy}% "
         f"below minimum "
         f"{MIN_ACCURACY}%"
     )
@@ -26,4 +40,19 @@ if accuracy < MIN_ACCURACY:
 print(
     f"Accuracy check passed "
     f"({accuracy}%)"
+)
+
+print(
+    f"Architecture: "
+    f"{architecture}"
+)
+
+print(
+    f"Version: "
+    f"{version}"
+)
+
+print(
+    f"Stage: "
+    f"{stage}"
 )

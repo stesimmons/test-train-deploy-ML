@@ -2,6 +2,8 @@ import json
 import os
 import shutil
 
+from datetime import datetime
+
 import mlflow
 
 import torch
@@ -16,6 +18,12 @@ from app.model import (
     BaselineCNN,
     WiderCNN,
     DeepCNN
+)
+
+
+MODEL_VERSION = os.getenv(
+    "MODEL_VERSION",
+    "v1.0.0"
 )
 
 
@@ -38,7 +46,9 @@ def train_and_evaluate(
 
     with mlflow.start_run(
         run_name=architecture
-    ):
+    ) as run:
+
+        run_id = run.info.run_id
 
         mlflow.log_param(
             "architecture",
@@ -59,6 +69,12 @@ def train_and_evaluate(
             "learning_rate",
             0.001
         )
+
+        mlflow.set_tags({
+            "architecture": architecture,
+            "stage": "Candidate",
+            "version": MODEL_VERSION
+        })
 
         print(
             f"\nTraining {architecture}"
@@ -141,7 +157,7 @@ def train_and_evaluate(
         )
 
         model_path = (
-            f"models/{architecture}.pth"
+            f"models/candidates/{architecture}.pth"
         )
 
         torch.save(
@@ -166,23 +182,33 @@ def train_and_evaluate(
             f"{accuracy:.2f}%"
         )
 
-        return accuracy, model_path
+        return (
+            accuracy,
+            architecture,
+            model_path,
+            run_id
+        )
 
 
 def main():
 
     os.makedirs(
-        "models",
+        "models/candidates",
+        exist_ok=True
+    )
+
+    os.makedirs(
+        "models/staging",
+        exist_ok=True
+    )
+
+    os.makedirs(
+        "models/production",
         exist_ok=True
     )
 
     mlflow.set_tracking_uri(
         "file:./mlruns"
-    )
-
-    print(
-        f"Tracking URI: "
-        f"{mlflow.get_tracking_uri()}"
     )
 
     mlflow.set_experiment(
@@ -192,10 +218,6 @@ def main():
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
-
-    print(
-        "Loading Fashion-MNIST dataset..."
-    )
 
     trainset = datasets.FashionMNIST(
         root="./data",
@@ -229,22 +251,15 @@ def main():
         else "cpu"
     )
 
-    print(
-        f"Using device: {device}"
-    )
-
     experiments = [
-
         (
             "BaselineCNN",
             BaselineCNN()
         ),
-
         (
             "WiderCNN",
             WiderCNN()
         ),
-
         (
             "DeepCNN",
             DeepCNN()
@@ -255,23 +270,15 @@ def main():
 
     for architecture, model in experiments:
 
-        accuracy, model_path = (
-            train_and_evaluate(
-                model=model.to(device),
-                architecture=architecture,
-                trainloader=trainloader,
-                testloader=testloader,
-                device=device
-            )
+        result = train_and_evaluate(
+            model=model.to(device),
+            architecture=architecture,
+            trainloader=trainloader,
+            testloader=testloader,
+            device=device
         )
 
-        results.append(
-            (
-                accuracy,
-                architecture,
-                model_path
-            )
-        )
+        results.append(result)
 
     results.sort(
         key=lambda x: x[0],
@@ -281,10 +288,16 @@ def main():
     best_accuracy = results[0][0]
     best_architecture = results[0][1]
     best_model_path = results[0][2]
+    best_run_id = results[0][3]
 
     shutil.copyfile(
         best_model_path,
-        "models/production-model.pth"
+        "models/staging/staging-model.pth"
+    )
+
+    shutil.copyfile(
+        best_model_path,
+        "models/production/production-model.pth"
     )
 
     metrics = {
@@ -297,14 +310,28 @@ def main():
                 2
             ),
 
-        "all_results": [
+        "stage":
+            "Production",
 
+        "version":
+            MODEL_VERSION,
+
+        "run_id":
+            best_run_id,
+
+        "registered_at":
+            datetime.utcnow().isoformat(),
+
+        "all_results": [
             {
-                "architecture": result[1],
-                "accuracy": round(
-                    result[0],
-                    2
-                )
+                "architecture":
+                    result[1],
+
+                "accuracy":
+                    round(
+                        result[0],
+                        2
+                    )
             }
 
             for result in results
@@ -324,11 +351,12 @@ def main():
 
     print("\nTraining Summary")
 
-    for accuracy, architecture, _ in results:
+    for accuracy, architecture, _, _ in results:
 
         print(
-            f"{architecture}: {accuracy:.2f}%"
-    )
+            f"{architecture}: "
+            f"{accuracy:.2f}%"
+        )
 
     print(
         f"\nBest Model: "
@@ -341,13 +369,8 @@ def main():
     )
 
     print(
-        "Production model saved to "
-        "models/production-model.pth"
-    )
-
-    print(
-        f"MLruns directory exists: "
-        f"{os.path.exists('mlruns')}"
+        f"Version: "
+        f"{MODEL_VERSION}"
     )
 
 

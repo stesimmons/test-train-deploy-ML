@@ -10,7 +10,6 @@ import torch
 import torch.nn.functional as F
 
 from PIL import Image
-from PIL import UnidentifiedImageError
 
 import torchvision.transforms as transforms
 
@@ -22,11 +21,12 @@ from app.model import (
 
 app = FastAPI()
 
-MODEL_PATH = "models/production-model.pth"
+MODEL_PATH = "models/production/production-model.pth"
 METRICS_PATH = "metrics.json"
 
 MODEL_LOADED = False
 BEST_ARCHITECTURE = "Unknown"
+MODEL_METADATA = {}
 
 
 def create_model(architecture: str):
@@ -54,9 +54,9 @@ if os.path.exists(METRICS_PATH):
             "r"
         ) as f:
 
-            metrics = json.load(f)
+            MODEL_METADATA = json.load(f)
 
-        BEST_ARCHITECTURE = metrics.get(
+        BEST_ARCHITECTURE = MODEL_METADATA.get(
             "best_architecture",
             "BaselineCNN"
         )
@@ -68,6 +68,7 @@ if os.path.exists(METRICS_PATH):
         )
 
         BEST_ARCHITECTURE = "BaselineCNN"
+        MODEL_METADATA = {}
 
 else:
 
@@ -192,18 +193,22 @@ async def predict(
         prediction.item()
     )
 
-    confidence_pct = float(
-        confidence.item() * 100
-    )
-
     return {
         "class_id": class_id,
         "class_name": CLASSES[class_id],
         "confidence": round(
-            confidence_pct,
+            float(confidence.item() * 100),
             2
         ),
-        "architecture": BEST_ARCHITECTURE
+        "architecture": BEST_ARCHITECTURE,
+        "version": MODEL_METADATA.get(
+            "version",
+            "Unknown"
+        ),
+        "stage": MODEL_METADATA.get(
+            "stage",
+            "Unknown"
+        )
     }
 
 
@@ -213,6 +218,21 @@ def model_info():
     return {
         "model": "Fashion-MNIST Production Model",
         "architecture": BEST_ARCHITECTURE,
+        "accuracy": MODEL_METADATA.get(
+            "best_accuracy"
+        ),
+        "stage": MODEL_METADATA.get(
+            "stage"
+        ),
+        "version": MODEL_METADATA.get(
+            "version"
+        ),
+        "registered_at": MODEL_METADATA.get(
+            "registered_at"
+        ),
+        "run_id": MODEL_METADATA.get(
+            "run_id"
+        ),
         "model_loaded": MODEL_LOADED,
         "model_exists": os.path.exists(MODEL_PATH),
         "metrics_exists": os.path.exists(METRICS_PATH),
