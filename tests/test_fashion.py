@@ -63,8 +63,7 @@ def test_predict_rejects_invalid_file():
     )
 
     assert response.status_code in [
-        400,
-        500
+        400
     ]
 
 

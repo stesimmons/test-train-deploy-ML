@@ -34,10 +34,10 @@ def create_model(architecture: str):
     if architecture == "BaselineCNN":
         return BaselineCNN()
 
-    elif architecture == "WiderCNN":
+    if architecture == "WiderCNN":
         return WiderCNN()
 
-    elif architecture == "DeepCNN":
+    if architecture == "DeepCNN":
         return DeepCNN()
 
     raise ValueError(
@@ -143,13 +143,6 @@ async def predict(
     file: UploadFile = File(...)
 ):
 
-    if not MODEL_LOADED:
-
-        raise HTTPException(
-            status_code=500,
-            detail="Model not loaded"
-        )
-
     try:
 
         image = Image.open(
@@ -161,6 +154,13 @@ async def predict(
         raise HTTPException(
             status_code=400,
             detail="Invalid image file"
+        )
+
+    if not MODEL_LOADED:
+
+        raise HTTPException(
+            status_code=500,
+            detail="Model not loaded"
         )
 
     transform = transforms.Compose([
