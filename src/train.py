@@ -42,7 +42,7 @@ def train_and_evaluate(
         lr=0.001
     )
 
-    num_epochs = 5
+    num_epochs = 1
 
     with mlflow.start_run(
         run_name=architecture
