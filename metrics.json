@@ -1,22 +1,22 @@
 {
     "best_architecture": "DeepCNN",
-    "best_accuracy": 87.96,
+    "best_accuracy": 89.14,
     "stage": "Production",
-    "version": "v1.68",
-    "run_id": "ba63007016bf45b9b6aded305bbe7c60",
-    "registered_at": "2026-08-03T09:56:10.990817",
+    "version": "v1.0.69",
+    "run_id": "35d7c054d32d4289a04a82e1f97f55b2",
+    "registered_at": "2026-08-03T10:06:22.911323",
     "all_results": [
         {
             "architecture": "DeepCNN",
-            "accuracy": 87.96
+            "accuracy": 89.14
         },
         {
             "architecture": "WiderCNN",
-            "accuracy": 86.83
+            "accuracy": 87.38
         },
         {
             "architecture": "BaselineCNN",
-            "accuracy": 84.98
+            "accuracy": 85.55
         }
     ]
 }
