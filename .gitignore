@@ -8,8 +8,16 @@ __pycache__/
 # Downloaded datasets
 data/
 
-# Generated training metrics
-metrics.json
-
-# MLFlow experiment files
+# MLflow experiment files
 mlruns/
+
+# Local MLflow sync state
+.mlflow_sync_state.json
+
+# Model artifacts generated during training
+models/BaselineCNN.pth
+models/WiderCNN.pth
+models/DeepCNN.pth
+
+# Allow production deployment artifacts
+!models/production-model.pth

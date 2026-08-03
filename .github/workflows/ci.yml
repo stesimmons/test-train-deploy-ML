@@ -1,5 +1,8 @@
 name: ML Pipeline
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -8,12 +11,16 @@ on:
 jobs:
   train-test-deploy:
 
+    if: "!contains(github.event.head_commit.message, 'Auto-update production model')"
+
     runs-on: ubuntu-latest
 
     steps:
 
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -36,13 +43,21 @@ jobs:
         run: |
           python -m src.train
 
-      - name: Verify MLflow Runs
-        run: |
-          ls -R mlruns
-
       - name: Validate Best Model Accuracy
         run: |
           python check_accuracy.py
+
+      - name: Commit Production Artifacts
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add -f models/production-model.pth
+          git add metrics.json
+
+          git diff --cached --quiet || git commit -m "Auto-update production model"
+
+          git push
 
       - name: Upload MLflow Runs
         uses: actions/upload-artifact@v4
@@ -55,12 +70,6 @@ jobs:
         with:
           name: best-model
           path: models/production-model.pth
-
-      - name: Upload All Models
-        uses: actions/upload-artifact@v4
-        with:
-          name: all-models
-          path: models/*.pth
 
       - name: Upload Benchmark Results
         uses: actions/upload-artifact@v4
