@@ -1,3 +1,8 @@
+# Tests the Fashion-MNIST prediction workflow by validating that the API
+# correctly processes input images and returns valid classification
+# results. Ensures the end-to-end inference pipeline functions as
+# expected before deployment.
+
 from fastapi.testclient import TestClient
 from app.main import app
 

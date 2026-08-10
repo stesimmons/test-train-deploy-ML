@@ -1,3 +1,7 @@
+# Trains and benchmarks multiple CNN architectures, tracks experiments
+# with MLflow, selects the best-performing model, and promotes it through
+# the Candidate → Staging → Production model registry for deployment.
+
 import json
 import os
 import shutil

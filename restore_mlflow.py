@@ -1,3 +1,9 @@
+# Restores the latest MLflow tracking store from GitHub Actions artifacts
+# before training. This preserves experiment history across workflow runs,
+# allowing MLflow to accumulate and compare model versions, architectures,
+# metrics, and production promotions over time instead of starting with an
+# empty mlruns/ directory on every CI execution.
+
 import io
 import os
 import shutil

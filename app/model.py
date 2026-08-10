@@ -1,3 +1,7 @@
+# Defines the Fashion-MNIST CNN architectures used throughout the
+# project. Multiple models are benchmarked, tracked in MLflow, and
+# promoted through the Candidate → Staging → Production lifecycle.
+
 import torch.nn as nn
 
 

@@ -1,3 +1,11 @@
+# Monitors GitHub Actions for new successful workflow runs and downloads
+# the latest MLflow artifact to the local machine. This keeps the local
+# MLflow UI synchronized with the CI/CD pipeline so experiment results,
+# model versions, metrics, and production promotions can be reviewed
+# outside of GitHub.
+# This script needs to be running before any models are pushed to 
+# GitHub for accurate tracking.
+
 import io
 import json
 import os

@@ -1,3 +1,8 @@
+# Validates that the selected production model meets the minimum accuracy
+# threshold required by the CI/CD pipeline. If the best model's accuracy
+# falls below the configured value, the workflow fails and deployment is
+# blocked to prevent promoting an underperforming model.
+
 import json
 import sys
 

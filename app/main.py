@@ -1,3 +1,8 @@
+# FastAPI inference service for the Fashion-MNIST MLOps pipeline.
+# Loads the current Production model from the Candidate → Staging →
+# Production model registry, exposes deployment metadata, health checks,
+# and prediction endpoints, and serves real-time image classification.
+
 from fastapi import FastAPI
 from fastapi import UploadFile
 from fastapi import File
